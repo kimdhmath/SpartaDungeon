@@ -62,109 +62,81 @@ public class Character //캐릭터 클래스
 
 public class Inventory //인벤토리 클래스
 {
-    private List<Item> items = new List<Item>();
-    private Character character;
-    private int select;
-    private int count = 0;
-    private bool isEquipManage = false;
+    private List<Item> items = new List<Item>();//아이템 리스트
+    private Character character;//캐릭터
+    private int select;//선택한 번호
+    private int index = 0;//아이템 번호
+    private bool isEquipManage = false;//장착 관리 모드 확인
 
     public Inventory(Character character)
     {
         this.character = character;
     }
 
-    public void InventoryMenu()
+
+    public void InventoryMenu()//인벤토리 메뉴
     {
         while (true)
         {
             ShowInventory();
-
             if (int.TryParse(Console.ReadLine(), out select))
             {
-                if (select == 0)
+                if (isEquipManage)//장착 관리 모드일 때
                 {
-                    Console.Clear();
-                    return;
+                    if (select == 0)//0을 입력하면 나가기
+                    {
+                        isEquipManage = false;
+                        Console.Clear();
+                    }
+                    else if (select > 0 && select <= items.Count)//아이템 번호를 입력하면 장착/해제
+                    {
+                        items[select - 1].equip = !items[select - 1].equip;
+                        Console.Clear();
+                    }
                 }
-                else if (select == 1)
+                else//장착 관리 모드가 아닐 때
                 {
-                    isEquipManage = true;
-                    EquipManage();
-                    Console.Clear();
+                    if (select == 0)//0을 입력하면 나가기
+                    {
+                        Console.Clear();
+                        return;
+                    }
+                    else if (select == 1)//1을 입력하면 장착 관리 모드로 전환
+                    {
+                        isEquipManage = true;
+                        Console.Clear();
+                    }
                 }
-                else
-                {
-                    Console.Clear();
-                    Console.WriteLine("잘못된 입력입니다.");
-                }
-            }
-            else
-            {
-                Console.Clear();
-                Console.WriteLine("잘못된 입력입니다.");
             }
         }
-    }
 
-   
-    public void EquipManage()
-    {
-        while(true)
-        {
-            ShowInventory();
-
-            if (int.TryParse(Console.ReadLine(), out select))
-            {
-                if (select == 0)
-                {
-                    isEquipManage = false;
-                    Console.Clear();
-                    return;
-                }
-                else if (select > 0 && select <= items.Count )
-                {
-                    items[select - 1].equip = !items[select - 1].equip;
-                    Console.Clear();
-                }
-                else
-                {
-                    Console.Clear();
-                    Console.WriteLine("잘못된 입력입니다.");
-                }
-            }
-            else
-            {
-                Console.Clear();
-                Console.WriteLine("잘못된 입력입니다.");
-            }
-        }
     }
 
 
-    public void ShowInventory()
+    public void ShowInventory()//인벤토리를 보여줌
     {
-        count = 0;
+        index = 0;
         Console.Clear();
         Console.WriteLine("인벤토리");
         Console.WriteLine();
         Console.WriteLine("[아이템 목록]");
         foreach (Item item in items)
         {
-            if(isEquipManage)
+            if(isEquipManage)//장착 관리 모드일 때
             {
-                Console.Write("-" + ++count + " ");
+                Console.Write("-" + ++index + " ");//아이템 번호 표시
             }
 
-            if (item.equip == true)
+            if (item.equip == true)//장착 중인 아이템 표시
             {
                 Console.Write($"[E]{item.name,-12}|");
             }
-            else
+            else//장착 중이 아닌 아이템 표시
             {
                 Console.Write($"{item.name,-15}|");
             }
 
-            if (item.type == 1)
+            if (item.type == 1)//아이템 타입에 따라 아이템 설명 표시
             {
                 Console.WriteLine($"공격력 +{item.attackPower,-4}|{item.description}");
             }
@@ -177,9 +149,9 @@ public class Inventory //인벤토리 클래스
                 Console.WriteLine($"체 력 +{item.hp,-4}|{item.description}");
             }
         }
-        if(!isEquipManage)
+        if(!isEquipManage)//장착 관리 모드가 아닐 때
         {
-            Console.WriteLine("1.장비 관리");
+            Console.WriteLine("1.장착 관리");
         }
         Console.WriteLine("0.나가기");
         Console.WriteLine();
