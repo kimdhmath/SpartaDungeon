@@ -93,6 +93,11 @@ public class Inventory //인벤토리 클래스
                         items[select - 1].equip = !items[select - 1].equip;
                         Console.Clear();
                     }
+                    else//그 외의 입력을 받으면 잘못된 입력임을 알림
+                    {
+                        Console.Clear();
+                        Console.WriteLine("잘못된 입력입니다.");
+                    }
                 }
                 else//장착 관리 모드가 아닐 때
                 {
@@ -106,7 +111,17 @@ public class Inventory //인벤토리 클래스
                         isEquipManage = true;
                         Console.Clear();
                     }
+                    else//그 외의 입력을 받으면 잘못된 입력임을 알림
+                    {
+                        Console.Clear();
+                        Console.WriteLine("잘못된 입력입니다.");
+                    }
                 }
+            }
+            else//숫자가 아닌 입력을 받으면 잘못된 입력임을 알림
+            {
+                Console.Clear();
+                Console.WriteLine("잘못된 입력입니다.");
             }
         }
 
