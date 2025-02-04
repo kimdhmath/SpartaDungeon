@@ -60,6 +60,11 @@ public class Character //캐릭터 클래스
             }
         }
     }
+
+    public void HelthDown()
+    {
+        hp -= 10;
+    }
 }
 
 public class Inventory //인벤토리 클래스
@@ -337,9 +342,10 @@ public class Village //마을 클래스
 {
     private int select;
     DisPlayManager disPlayManager = new DisPlayManager();
-    public Village()
+    private Character character;
+    public Village(Character character)
     {
-
+        this.character = character;
     }
 
     public int SelectMenu() //마을에서 할 수 있는 행동을 선택
@@ -351,6 +357,8 @@ public class Village //마을 클래스
             Console.WriteLine("1.상태보기");
             Console.WriteLine("2.인벤토리");
             Console.WriteLine("3.상점");
+            Console.WriteLine("4.던전입장");
+            Console.WriteLine("5.휴식");
             Console.WriteLine("원하시는 행동을 입력해 주세요");
             Console.Write(">>");
 
@@ -365,16 +373,66 @@ public class Village //마을 클래스
                 Console.WriteLine("잘못된 입력입니다.");
             }
         }
+    }
 
+    public void Rest()
+    {
+        Console.Clear();
+        while (true)
+        {
+            Console.WriteLine("500 G 를 내면 체력을 회복할 수 있습니다.(보유 골드 : {0} G)", character.gold);
+            Console.WriteLine();
+            Console.WriteLine("1.휴식하기");
+            Console.WriteLine("0.나가기");
+            Console.WriteLine();
+            Console.WriteLine("원하시는 행동을 입력해 주세요");
+            Console.Write(">>");
+            if (int.TryParse(Console.ReadLine(), out select))
+            {
+                Console.Clear();
+                if (select == 1)
+                {
+                    if (character.gold >= 500)
+                    {
+                        if(character.hp == 100)
+                        {
+                            Console.Clear();
+                            Console.WriteLine("이미 체력이 가득 찼습니다.");
+                        }
+                        else if(character.hp < 100)
+                        {
+                            character.hp = 100;
+                            character.gold -= 500;
+                            Console.Clear();
+                            Console.WriteLine("휴식을 완료했습니다.");
+                        }
+                    }
+                    else
+                    {
+                        Console.Clear();
+                        Console.WriteLine("골드가 부족합니다.");
+                    }
+                }
+                else if (select == 0)
+                {
+                    break;
+                }
+                else
+                {
+                    Console.Clear();
+                    Console.WriteLine("잘못된 입력입니다.");
+                }
+            }
+        }
     }
 }
 
-class Program
+    class Program
 {
     static void Main(string[] args)
     {
-        Village village = new Village();
         Character character = new Character();
+        Village village = new Village(character);
         Inventory inventory = new Inventory(character);
         Shop shop = new Shop(inventory);
         int select = 0;
@@ -393,6 +451,13 @@ class Program
                     break;
                 case 3:
                     shop.ShopMenu();//상점 메뉴를 보여줌
+                    break;
+                case 4:
+                    character.HelthDown();
+                    Console.WriteLine("던전입장");
+                    break;
+                case 5:
+                    village.Rest();
                     break;
                 default:
                     Console.WriteLine("잘못된 입력입니다.");
