@@ -1,5 +1,13 @@
 ﻿
 using System.Runtime.CompilerServices;
+using System;
+using System.Collections.Generic;
+
+public enum ItemType //아이템 타입
+{
+    Weapon,
+    Armor
+}
 
 public class Character //캐릭터 클래스
 {
@@ -11,6 +19,7 @@ public class Character //캐릭터 클래스
     public int maxHp { get; set; }
     public int hp { get; set; }
     public int gold { get; set; }
+    public Dictionary<ItemType, Item> equipItem = new Dictionary<ItemType, Item>();
 
     public Character()
     {
@@ -21,7 +30,7 @@ public class Character //캐릭터 클래스
         defensePower = 5;
         maxHp = 100;
         hp = maxHp;
-        gold = 1500;
+        gold = 11500;
     }
 
     public void Status() //캐릭터의 상태를 보여줌
@@ -62,11 +71,12 @@ public class Character //캐릭터 클래스
             }
         }
     }
-
     public void HelthDown()
     {
+        Console.WriteLine("체력이 10 감소합니다.");
         hp -= 10;
     }
+
 }
 
 public class Inventory //인벤토리 클래스
@@ -106,12 +116,13 @@ public class Inventory //인벤토리 클래스
                         if(items[select - 1].isEquip == true)//장착 중일 때
                         {
                             UnEquipItem(items[select - 1]);
+                            Console.Clear();
                         }
                         else//장착 중이 아닐 때
                         {
                             EquipItem(items[select - 1]);
+                            Console.Clear();
                         }
-                        Console.Clear();
                     }
                     else//그 외의 입력을 받으면 잘못된 입력임을 알림
                     {
@@ -157,30 +168,36 @@ public class Inventory //인벤토리 클래스
         if(item.isEquip == true)//장착 중일 때
         {
             UnEquipItem(item);
-            item.isEquip = false;
         }
         items.Remove(item);
+        for(int i = 0; i < items.Count; i++)//아이템 번호 재설정
+        {
+            Console.WriteLine(items[i].name + "  " + items[i].isEquip);
+        }
     }
 
-    public void EquipItem(Item item)//아이템 장착
+    private void EquipItem(Item item)//아이템 장착
     {
         item.isEquip = true;
+        if (character.equipItem.ContainsKey(item.type))//이미 장착 중인 아이템이 있을 때
+        {
+            UnEquipItem(character.equipItem[item.type]);
+            character.equipItem[item.type] = item;
+        }
+        else//장착 중인 아이템이 없을 때
+        {
+            character.equipItem.Add(item.type, item);
+        }
         character.attackPower += item.attackPower;
         character.defensePower += item.defensePower;
-        character.maxHp += item.hp;
-        character.hp += item.hp;
     }
 
-    public void UnEquipItem(Item item)//아이템 해제
+    private void UnEquipItem(Item item)//아이템 해제
     {
         item.isEquip = false;
+        character.equipItem.Remove(item.type);
         character.attackPower -= item.attackPower;
         character.defensePower -= item.defensePower;
-        character.maxHp -= item.hp;
-        if(character.hp > character.maxHp)//체력이 최대 체력보다 클 때
-        {
-            character.hp = character.maxHp;
-        }
     }
     public List<Item> ItemList//아이템 리스트 반환
     {
@@ -201,12 +218,12 @@ public class Shop
     public Shop(Inventory inventory)
     {
         this.inventory = inventory;
-        items.Add(new Item("수련자의 갑옷", 1000, 0, 5, 0, 2, "수련에 도움을 주는 갑옷입니다."));
-        items.Add(new Item("무쇠갑옷", 2000, 0, 9, 0, 2, "무쇠로 만들어져 튼튼한 갑옷입니다."));
-        items.Add(new Item("스파르타 갑옷", 3500, 0, 15, 0, 2, "스파르타의 전사들이 사용했다는 전설의 갑옷입니다."));
-        items.Add(new Item("낡은 검", 600, 2, 0, 0, 1, "쉽게 볼 수 있는 낡은 검 입니다."));
-        items.Add(new Item("청동 도끼", 1700, 5, 0, 0, 1, "어디선가 사용됐던거 같은 도끼입니다."));
-        items.Add(new Item("스파르타의 창", 2700, 7, 0, 0, 1, "스파르타의 전사들이 사용했다는 전설의 창입니다."));
+        items.Add(new Item("수련자의 갑옷", 1000, 0, 5, ItemType.Armor, "수련에 도움을 주는 갑옷입니다."));
+        items.Add(new Item("무쇠갑옷", 2000, 0, 9, ItemType.Armor, "무쇠로 만들어져 튼튼한 갑옷입니다."));
+        items.Add(new Item("스파르타 갑옷", 3500, 0, 15, ItemType.Armor, "스파르타의 전사들이 사용했다는 전설의 갑옷입니다."));
+        items.Add(new Item("낡은 검", 600, 2, 0, ItemType.Weapon, "쉽게 볼 수 있는 낡은 검 입니다."));
+        items.Add(new Item("청동 도끼", 1700, 5, 0, ItemType.Weapon, "어디선가 사용됐던거 같은 도끼입니다."));
+        items.Add(new Item("스파르타의 창", 2700, 7, 0, ItemType.Weapon, "스파르타의 전사들이 사용했다는 전설의 창입니다."));
     }
 
 
@@ -284,14 +301,15 @@ public class Shop
                         isSaleList = false;
                         Console.Clear();
                     }
-                    else if (select > 0 && select <= items.Count)//아이템 번호를 입력하면 판매
+                    else if (select > 0 && select <= inventory.ItemList.Count)//아이템 번호를 입력하면 판매
                     {
-                        if (items[select - 1].isOwn)//아이템을 소유하고 있을 때
+                        if (inventory.ItemList[select - 1].isOwn)//아이템을 소유하고 있을 때
                         {
-                            inventory.character.gold += (items[select - 1].price * 85) / 100;
-                            items[select - 1].isOwn = false;
-                            inventory.RemoveItem(items[select - 1]);
+                            inventory.character.gold += (inventory.ItemList[select - 1].price * 85) / 100;
+                            inventory.ItemList[select - 1].isOwn = false;
+
                             Console.Clear();
+                            inventory.RemoveItem(inventory.ItemList[select - 1]);
                         }
                         else//아이템을 소유하고 있지 않을 때
                         {
@@ -345,19 +363,17 @@ public class Item //아이템 클래스
     public int price { get; set; }
     public int attackPower { get; set; }
     public int defensePower { get; set; }
-    public int hp { get; set; }
-    public int type { get; set; }
+    public ItemType type { get; set; }
     public bool isEquip { get; set; }
   
     public bool isOwn { get; set; }
 
-    public Item(string name, int price, int attackPower, int defensePower, int hp, int type, string description)
+    public Item(string name, int price, int attackPower, int defensePower, ItemType type, string description)
     {
     this.name = name;
     this.price = price;
     this.attackPower = attackPower;
     this.defensePower = defensePower;
-    this.hp = hp;
     this.type = type;
     this.isEquip = false;
     this.description = description;
@@ -388,17 +404,13 @@ public class DisPlayManager
                 Console.Write($"{item.name,-15}|");
             }
 
-            if (item.type == 1)//아이템 타입에 따라 아이템 설명 표시
+            if (item.type == ItemType.Weapon)//아이템 타입에 따라 아이템 설명 표시
             {
                 Console.Write($"공격력 +{item.attackPower,-4}|{item.description}");
             }
-            else if (item.type == 2)
+            else if (item.type == ItemType.Armor)
             {
                 Console.Write($"방어력 +{item.defensePower,-4}|{item.description}");
-            }
-            else if (item.type == 3)
-            {
-                Console.Write($"체  력 +{item.hp,-4}|{item.description}");
             }
 
             if (isShop)//상점 구매 목록일 때
@@ -438,7 +450,6 @@ public class DisPlayManager
 public class Village //마을 클래스
 {
     private int select;
-    DisPlayManager disPlayManager = new DisPlayManager();
     private Character character;
     public Village(Character character)
     {
