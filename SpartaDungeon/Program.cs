@@ -14,7 +14,7 @@ public class Character //캐릭터 클래스
     public int level { get; set; }
     public string name { get; set; }
     public string cClass { get; set; }
-    public int attackPower { get; set; }
+    public float attackPower { get; set; }
     public int defensePower { get; set; }
     public int maxHp { get; set; }
     public int hp { get; set; }
@@ -30,7 +30,7 @@ public class Character //캐릭터 클래스
         defensePower = 5;
         maxHp = 100;
         hp = maxHp;
-        gold = 11500;
+        gold = 1500;
     }
 
     public void Status() //캐릭터의 상태를 보여줌
@@ -71,10 +71,25 @@ public class Character //캐릭터 클래스
             }
         }
     }
-    public void HelthDown()
+    
+
+    public void Die() //캐릭터 사망
     {
-        Console.WriteLine("체력이 10 감소합니다.");
-        hp -= 10;
+        Console.Clear();
+        Console.WriteLine("사망하였습니다.");
+        level = 1;
+        attackPower = 10;
+        defensePower = 5;
+        maxHp = 100;
+        hp = maxHp;
+        gold = 1500;
+    }
+
+    public void LevelUp() //레벨업
+    {
+        level++;
+        attackPower += 0.5f;
+        defensePower += 1;
     }
 
 }
@@ -188,7 +203,7 @@ public class Inventory //인벤토리 클래스
         {
             character.equipItem.Add(item.type, item);
         }
-        character.attackPower += item.attackPower;
+        character.attackPower += (float)item.attackPower;
         character.defensePower += item.defensePower;
     }
 
@@ -196,7 +211,7 @@ public class Inventory //인벤토리 클래스
     {
         item.isEquip = false;
         character.equipItem.Remove(item.type);
-        character.attackPower -= item.attackPower;
+        character.attackPower -= (float)item.attackPower;
         character.defensePower -= item.defensePower;
     }
     public List<Item> ItemList//아이템 리스트 반환
@@ -495,20 +510,20 @@ public class Village //마을 클래스
             Console.WriteLine();
             Console.WriteLine("원하시는 행동을 입력해 주세요");
             Console.Write(">>");
-            if (int.TryParse(Console.ReadLine(), out select))
+            if (int.TryParse(Console.ReadLine(), out select))//숫자를 입력받으면
             {
                 Console.Clear();
                 if (select == 1)
                 {
                     Console.Clear();
-                    if (character.gold >= 500)
+                    if (character.gold >= 500)//골드가 500 이상일 때
                     {
-                        if (character.hp == character.maxHp)
+                        if (character.hp == character.maxHp)//체력이 가득 찼을 때
                         {
                             Console.Clear();
                             Console.WriteLine("이미 체력이 가득 찼습니다.");
                         }
-                        else if (character.hp < character.maxHp)
+                        else if (character.hp < character.maxHp)// 체력이 가득 차지 않았을 때
                         {
                             character.hp = character.maxHp;
                             character.gold -= 500;
@@ -516,7 +531,7 @@ public class Village //마을 클래스
                             Console.WriteLine("휴식을 완료했습니다.");
                         }
                     }
-                    else
+                    else//골드가 500 미만일 때
                     {
                         Console.Clear();
                         Console.WriteLine("골드가 부족합니다.");
@@ -536,6 +551,165 @@ public class Village //마을 클래스
     }
 }
 
+public class Dungeon //던전 클래스
+{
+    private int difficultLevel;//던전 난이도
+    private int dungeonCount = 0; //던전 클리어 횟수
+    private int beforeHp = 0;//던전 입장 전 체력
+    private int beforeGold = 0;//던전 입장 전 골드
+    private bool isLive;
+    Random random = new Random();
+    private Character character;
+
+    public Dungeon(Character character)
+    {
+        this.character = character;
+    }
+
+    public void DungeonMenu()
+    {
+        isLive = true;
+        Console.Clear();
+        while (true)
+        {
+            Console.WriteLine("던전 입장");
+            Console.WriteLine("이곳에서 던전으로 들어가기전 활동을 할 수 있습니다.");
+            Console.WriteLine();
+            Console.WriteLine("1.쉬운 던전 | 방어력 5 이상 권장");
+            Console.WriteLine("2.일반 던전 | 방어력 11 이상 권장");
+            Console.WriteLine("3.어려운 던전 | 방어력 17 이상 권장");
+            Console.WriteLine("0.나가기");
+            Console.WriteLine();
+            Console.WriteLine("원하시는 행동을 입력해 주세요");
+            Console.Write(">>");
+            if (int.TryParse(Console.ReadLine(), out difficultLevel))
+            {
+                if (difficultLevel == 0)
+                {
+                    Console.Clear();
+                    break;
+                }
+                else if (difficultLevel == 1)
+                {
+                    StartDungeon(5);
+                }
+                else if (difficultLevel == 2)
+                {
+                    StartDungeon(11);
+                }
+                else if (difficultLevel == 3)
+                {
+                    StartDungeon(17);
+                }
+                else
+                {
+                    Console.Clear();
+                    Console.WriteLine("잘못된 입력입니다.");
+                }
+            }
+            else
+            {
+                Console.Clear();
+                Console.WriteLine("잘못된 입력입니다.");
+            }
+            if (!isLive)
+            {
+                break;
+            }
+        }
+    }
+
+    public void ClearDungeon(int difficult)//던전 클리어
+    {
+        int rewardGold;
+        Console.Clear();
+        Console.WriteLine("던전 클리어!");
+        Console.WriteLine("축하합니다!!");
+        dungeonCount++;
+        if (dungeonCount == character.level)
+        {
+            dungeonCount = 0;
+            character.LevelUp();
+        }
+        if (difficult == 1)
+        {
+            Console.WriteLine("쉬운 던전을 클리어 하셨습니다.");
+            rewardGold = Reward(1000);
+        }
+        else if (difficult == 2)
+        {
+            Console.WriteLine("일반 던전을 클리어 하셨습니다.");
+            rewardGold = Reward(1700);
+        }
+        else if (difficult == 3)
+        {
+            Console.WriteLine("어려운 던전을 클리어 하셨습니다.");
+            rewardGold = Reward(2500);
+        }
+        else
+        {
+            rewardGold = 0;
+        }
+        character.gold += rewardGold;
+
+        Console.WriteLine();
+        Console.WriteLine("체력 {0} -> {1}", beforeHp, character.hp);
+        Console.WriteLine("Gold {0} G -> {1} G", beforeGold, character.gold);
+
+        Console.WriteLine("");
+    }
+
+    private void PlayDungeon(int recommendateion)//던전 플레이
+    {
+        random.Next(20, 36);
+        character.hp = character.hp - random.Next(20, 36) - recommendateion + character.defensePower;
+        if(character.hp > 0)
+        {
+            ClearDungeon(difficultLevel);
+        }
+        else
+        {
+            character.Die();
+            isLive = false;
+        }
+    }
+
+    private void FailDungeon()//던전 실패
+    {
+        Console.Clear();
+        Console.WriteLine("던전 실패...");
+        character.hp = character.hp / 2;
+    }
+
+    private int Reward(int basicReward)//보상
+    {
+        int attack = (int)character.attackPower;
+        return (basicReward * (100 + random.Next(attack, attack * 2 + 1))/100);
+    }
+
+    private void StartDungeon(int recommendation)
+    {
+        beforeHp = character.hp;
+        beforeGold = character.gold;
+        if (character.defensePower < recommendation)
+        {
+            if (random.Next(1, 101) <= 40)
+            {
+                FailDungeon();
+            }
+            else
+            {
+                PlayDungeon(recommendation);
+            }
+        }
+        else
+        {
+            PlayDungeon(recommendation);
+        }
+
+    }
+}
+
     class Program
 {
     static void Main(string[] args)
@@ -544,8 +718,10 @@ public class Village //마을 클래스
         Village village = new Village(character);
         Inventory inventory = new Inventory(character);
         Shop shop = new Shop(inventory);
+        Dungeon dungeon = new Dungeon(character);
         int select = 0;
         bool isPlaying = true; //게임이 진행 중인지 확인
+
 
         while (isPlaying)
         {
@@ -562,11 +738,10 @@ public class Village //마을 클래스
                     shop.ShopMenu();//상점 메뉴를 보여줌
                     break;
                 case 4:
-                    character.HelthDown();
-                    Console.WriteLine("던전입장");
+                    dungeon.DungeonMenu();//던전 메뉴를 보여줌
                     break;
                 case 5:
-                    village.Rest();
+                    village.Rest();//휴식 메뉴를 보여줌
                     break;
                 default:
                     Console.WriteLine("잘못된 입력입니다.");
