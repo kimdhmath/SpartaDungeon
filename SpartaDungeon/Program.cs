@@ -8,6 +8,7 @@ public class Character //캐릭터 클래스
     public string cClass { get; set; }
     public int attackPower { get; set; }
     public int defensePower { get; set; }
+    public int maxHp { get; set; }
     public int hp { get; set; }
     public int gold { get; set; }
 
@@ -18,7 +19,8 @@ public class Character //캐릭터 클래스
         cClass = "전사";
         attackPower = 10;
         defensePower = 5;
-        hp = 100;
+        maxHp = 100;
+        hp = maxHp;
         gold = 1500;
     }
 
@@ -101,7 +103,14 @@ public class Inventory //인벤토리 클래스
                     }
                     else if (select > 0 && select <= items.Count)//아이템 번호를 입력하면 장착/해제
                     {
-                        items[select - 1].isEquip = !items[select - 1].isEquip;
+                        if(items[select - 1].isEquip == true)//장착 중일 때
+                        {
+                            UnEquipItem(items[select - 1]);
+                        }
+                        else//장착 중이 아닐 때
+                        {
+                            EquipItem(items[select - 1]);
+                        }
                         Console.Clear();
                     }
                     else//그 외의 입력을 받으면 잘못된 입력임을 알림
@@ -138,9 +147,44 @@ public class Inventory //인벤토리 클래스
 
     }
 
-    public void addItem(Item item)
+    public void AddItem(Item item)//아이템 추가
     {
         items.Add(item);
+    }
+
+    public void RemoveItem(Item item)//아이템 제거
+    {
+        if(item.isEquip == true)//장착 중일 때
+        {
+            UnEquipItem(item);
+            item.isEquip = false;
+        }
+        items.Remove(item);
+    }
+
+    public void EquipItem(Item item)//아이템 장착
+    {
+        item.isEquip = true;
+        character.attackPower += item.attackPower;
+        character.defensePower += item.defensePower;
+        character.maxHp += item.hp;
+        character.hp += item.hp;
+    }
+
+    public void UnEquipItem(Item item)//아이템 해제
+    {
+        item.isEquip = false;
+        character.attackPower -= item.attackPower;
+        character.defensePower -= item.defensePower;
+        character.maxHp -= item.hp;
+        if(character.hp > character.maxHp)//체력이 최대 체력보다 클 때
+        {
+            character.hp = character.maxHp;
+        }
+    }
+    public List<Item> ItemList//아이템 리스트 반환
+    {
+        get { return items; }
     }
 }
 
@@ -149,7 +193,8 @@ public class Shop
 {
     List<Item> items = new List<Item>();
     private int select;
-    private bool isList = false;
+    private bool isBuyList = false;
+    private bool isSaleList = false;
     DisPlayManager disPlayManager = new DisPlayManager();
     private Inventory inventory;
 
@@ -167,7 +212,6 @@ public class Shop
 
     public void ShopMenu()//상점 메뉴
     {
-
         Console.Clear();
         while (true)
         {
@@ -176,14 +220,31 @@ public class Shop
             Console.WriteLine("[보유골드]");
             Console.WriteLine(inventory.character.gold + " G");
             Console.WriteLine();
-            disPlayManager.ShowItmeList(items, false, true, isList);
+            if(isBuyList)//상점 구매 목록
+            {
+                Console.WriteLine("[구매 목록]");
+                Console.WriteLine();
+                disPlayManager.ShowItmeList(items, false, true, true);
+            }
+            else if(isSaleList)//상점 판매 목록
+            {
+                Console.WriteLine("[판매 목록]");
+                Console.WriteLine();
+                disPlayManager.ShowItmeList(inventory.ItemList, false, true, true);
+            }
+            else//상점 목록
+            {
+                Console.WriteLine("[상점 목록]");
+                Console.WriteLine();
+                disPlayManager.ShowItmeList(items, false, true, false);
+            }
             if (int.TryParse(Console.ReadLine(), out select))
             {
-                if (isList)//상점 구매 목록일 때
+                if (isBuyList)//상점 구매 목록일 때
                 {
                     if (select == 0)//0을 입력하면 나가기
                     {
-                        isList = false;
+                        isBuyList = false;
                         Console.Clear();
                     }
                     else if (select > 0 && select <= items.Count)//아이템 번호를 입력하면 구매
@@ -194,7 +255,7 @@ public class Shop
                             {
                                 inventory.character.gold -= items[select - 1].price;
                                 items[select - 1].isOwn = true;
-                                inventory.addItem(items[select - 1]);
+                                inventory.AddItem(items[select - 1]);
                                 Console.Clear();
                             }
                             else//골드가 부족할 때
@@ -203,9 +264,39 @@ public class Shop
                                 Console.WriteLine("골드가 부족합니다.");
                             }
                         }
-                        else
+                        else//이미 소유한 아이템일 때
                         {
                             Console.Clear();
+                            Console.WriteLine("이미 소유한 아이템입니다.");
+                        }
+                    }
+                    else//그 외의 입력을 받으면 잘못된 입력임을 알림
+                    {
+                        Console.Clear();
+                        Console.WriteLine("잘못된 입력입니다.");
+                    }
+                }
+                else if (isSaleList)
+                {
+                    Console.Clear();
+                    if (select == 0)//0을 입력하면 나가기
+                    {
+                        isSaleList = false;
+                        Console.Clear();
+                    }
+                    else if (select > 0 && select <= items.Count)//아이템 번호를 입력하면 판매
+                    {
+                        if (items[select - 1].isOwn)//아이템을 소유하고 있을 때
+                        {
+                            inventory.character.gold += (items[select - 1].price * 85) / 100;
+                            items[select - 1].isOwn = false;
+                            inventory.RemoveItem(items[select - 1]);
+                            Console.Clear();
+                        }
+                        else//아이템을 소유하고 있지 않을 때
+                        {
+                            Console.Clear();
+                            Console.WriteLine("소유하고 있지 않은 아이템입니다.");
                         }
                     }
                     else//그 외의 입력을 받으면 잘못된 입력임을 알림
@@ -223,7 +314,12 @@ public class Shop
                     }
                     else if (select == 1)//1을 입력하면 상점 구매 목록으로 전환
                     {
-                        isList = true;
+                        isBuyList = true;
+                        Console.Clear();
+                    }
+                    else if(select == 2)
+                    {
+                        isSaleList = true;
                         Console.Clear();
                     }
                     else//그 외의 입력을 받으면 잘못된 입력임을 알림
@@ -328,7 +424,8 @@ public class DisPlayManager
         }
         else if (isShop && !isList)//상점일 때
         {
-            Console.WriteLine("1.구매");
+            Console.WriteLine("1.아이템 구매");
+            Console.WriteLine("2.아이템 판매");
         }
         Console.WriteLine("0.나가기");
         Console.WriteLine();
@@ -392,16 +489,17 @@ public class Village //마을 클래스
                 Console.Clear();
                 if (select == 1)
                 {
+                    Console.Clear();
                     if (character.gold >= 500)
                     {
-                        if(character.hp == 100)
+                        if (character.hp == character.maxHp)
                         {
                             Console.Clear();
                             Console.WriteLine("이미 체력이 가득 찼습니다.");
                         }
-                        else if(character.hp < 100)
+                        else if (character.hp < character.maxHp)
                         {
-                            character.hp = 100;
+                            character.hp = character.maxHp;
                             character.gold -= 500;
                             Console.Clear();
                             Console.WriteLine("휴식을 완료했습니다.");
@@ -417,11 +515,11 @@ public class Village //마을 클래스
                 {
                     break;
                 }
-                else
-                {
-                    Console.Clear();
-                    Console.WriteLine("잘못된 입력입니다.");
-                }
+            }
+            else
+            {
+                Console.Clear();
+                Console.WriteLine("잘못된 입력입니다.");
             }
         }
     }
