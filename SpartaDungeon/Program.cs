@@ -74,7 +74,7 @@ public class Character //캐릭터 클래스
                     Console.WriteLine("잘못된 입력입니다.");
                 }
             }
-            else
+            else//숫자가 아닌 입력을 받으면 잘못된 입력임을 알림
             {
                 Console.Clear();
                 Console.WriteLine("잘못된 입력입니다.");
@@ -99,9 +99,13 @@ public class Character //캐릭터 클래스
 
     public void LevelUp() //레벨업
     {
-        level++;
-        baseAttackPower += 0.5f;
-        baseDefensePower += 1;
+        if(level <6)//레벨이 5 이하일 때
+        {
+            level++;
+            baseAttackPower += 0.5f;
+            baseDefensePower += 1;
+            CalculateAbility();
+        }
     }
 
     public void EquipItem(Item item) //아이템 장착
@@ -113,26 +117,23 @@ public class Character //캐릭터 클래스
         }
 
         equipItem[item.type] = item; // 새 아이템 장착
-        attackPower = baseAttackPower; // 기본 공격력으로 초기화 후 다시 계산
-        defensePower = baseDefensePower; // 기본 방어력으로 초기화 후 다시 계산
-
-        foreach (Item i in equipItem.Values)//장착 중인 아이템의 능력치를 계산
-        {
-            attackPower += i.attackPower;
-            defensePower += i.defensePower;
-        }
+        CalculateAbility(); // 능력치 계산
     }
 
     public void UnEquipItem(Item item)//아이템 해제
     {
         equipItem.Remove(item.type);//아이템 해제
-        attackPower = baseAttackPower; // 기본 공격력으로 초기화 후 다시 계산
-        defensePower = baseDefensePower; // 기본 방어력으로 초기화 후 다시 계산
+        CalculateAbility();//능력치 계산
+    }
 
-        foreach (Item i in equipItem.Values)//장착 중인 아이템의 능력치를 계산
+    public void CalculateAbility()//능력치 계산
+    {
+        attackPower = baseAttackPower;
+        defensePower = baseDefensePower;
+        foreach (Item item in equipItem.Values)//장착 중인 아이템의 능력치를 더함
         {
-            attackPower += i.attackPower;
-            defensePower += i.defensePower;
+            attackPower += item.attackPower;
+            defensePower += item.defensePower;
         }
     }
 
@@ -154,6 +155,8 @@ public class Inventory //인벤토리 클래스
 
     public void InventoryMenu()//인벤토리 메뉴
     {
+        var sortList = items.OrderBy(x => x.id);
+        items = sortList.ToList();
         Console.Clear();
         while (true)
         {
@@ -171,7 +174,7 @@ public class Inventory //인벤토리 클래스
                     }
                     else if (select > 0 && select <= items.Count)//아이템 번호를 입력하면 장착/해제
                     {
-                        if(items[select - 1].isEquip == true)//장착 중일 때
+                        if (items[select - 1].isEquip == true)//장착 중일 때
                         {
                             UnEquipItem(items[select - 1]);
                             Console.Clear();
@@ -231,17 +234,21 @@ public class Inventory //인벤토리 클래스
         {
             UnEquipItem(item);
         }
+        if(item.isOwn == true)//소유 중일 때
+        {
+            item.isOwn = false;
+        }
         items.Remove(item);
     }
 
-    public void RemoveAllItem()//모든 아이템 제거
+    public void RemoveAllItem() // 모든 아이템 제거
     {
-        foreach (Item item in items)
+        var itemsCopy = new List<Item>(items);
+        foreach (Item item in itemsCopy)
         {
             RemoveItem(item);
         }
         character.Die();
-
     }
 
     private void EquipItem(Item item)//아이템 장착
@@ -262,12 +269,15 @@ public class Inventory //인벤토리 클래스
     }
     public List<Item> ItemList//아이템 리스트 반환
     {
+
         get { return items; }
     }
 
     public void ShowItmeList(List<Item> items, bool isInventory, bool isShop, bool isList)
     {
         int index = 0;
+        var sortList = items.OrderBy(x => x.id);
+        items = sortList.ToList();
         Console.WriteLine("[아이템 목록]");
         foreach (Item item in items)
         {
@@ -341,7 +351,7 @@ public class Shop
     public Shop(Inventory inventory)
     {
         this.inventory = inventory;
-        foreach(Item item in inventory.ItemList)
+        foreach(Item item in inventory.ItemList)//저장된 인벤토리에 있는 아이템을 상점에 추가
         {
             AddItem(item);
         }
@@ -351,12 +361,16 @@ public class Shop
         AddItem(new Item(4,"낡은 검", 600, 2, 0, ItemType.Weapon, "쉽게 볼 수 있는 낡은 검 입니다."));
         AddItem(new Item(5,"청동 도끼", 1700, 5, 0, ItemType.Weapon, "어디선가 사용됐던거 같은 도끼입니다."));
         AddItem(new Item(6,"스파르타의 창", 2700, 7, 0, ItemType.Weapon, "스파르타의 전사들이 사용했다는 전설의 창입니다."));
-        items.OrderBy(x => x.id);
+        var sortList = items.OrderBy(x => x.id);
+        items = sortList.ToList();
     }
 
 
     public void ShopMenu()//상점 메뉴
     {
+
+        var sortList = items.OrderBy(x => x.id);
+        items = sortList.ToList();
         Console.Clear();
         while (true)
         {
@@ -540,6 +554,7 @@ public class Village //마을 클래스
             Console.WriteLine("3.상점");
             Console.WriteLine("4.던전입장");
             Console.WriteLine("5.휴식");
+            Console.WriteLine("0.게임종료");
             Console.WriteLine("원하시는 행동을 입력해 주세요");
             Console.Write(">>");
 
@@ -556,7 +571,7 @@ public class Village //마을 클래스
         }
     }
 
-    public void Rest()
+    public void Rest()//휴식 메뉴
     {
         Console.Clear();
         while (true)
@@ -612,10 +627,10 @@ public class Village //마을 클래스
 public class Dungeon //던전 클래스
 {
     private int difficultLevel;//던전 난이도
-    private int dungeonCount = 0; //던전 클리어 횟수
+    public int dungeonCount = 0; //던전 클리어 횟수
     private int beforeHp = 0;//던전 입장 전 체력
     private int beforeGold = 0;//던전 입장 전 골드
-    private bool isLive;
+    private bool isLive;//생존 여부
     Random random = new Random();
     private Character character;
     private Inventory inventory;
@@ -770,30 +785,48 @@ public class Dungeon //던전 클래스
     }
 }
 
-public class FileSaveLoad
+public class FileSaveLoad//파일 저장 및 불러오기
 {
-    //파일 저장 및 불러오기 클래스
-    string filePathC = "SaveCharacter.txt";
-    string filePathI = "SaveInventory.txt";
+    string filePath = "Save.txt";
+    Character character;
+    Inventory inventory;
+    Dungeon dungeon;
 
-    public void SaveCharacter(Character character)
+    public FileSaveLoad(Character character, Inventory inventory, Dungeon dungeon)
     {
-        using (StreamWriter writer = new StreamWriter(filePathC))
+        this.character = character;
+        this.inventory = inventory;
+        this.dungeon = dungeon;
+    }
+    public void Save()//파일 저장
+    {
+        using (StreamWriter writer = new StreamWriter(filePath))
         {
             writer.WriteLine("level:_{0}", character.level);
             writer.WriteLine("name:_{0}", character.name);
             writer.WriteLine("cClass:_{0}", character.cClass);
             writer.WriteLine("baseAttackPower:_{0}", character.baseAttackPower);
             writer.WriteLine("baseDefensePower:_{0}", character.baseDefensePower);
-            writer.WriteLine("attackPower:_{0}", character.attackPower);
-            writer.WriteLine("defensePower:_{0}", character.defensePower);
             writer.WriteLine("maxHp:_{0}", character.maxHp);
             writer.WriteLine("hp:_{0}", character.hp);
             writer.WriteLine("gold:_{0}", character.gold);
+            writer.WriteLine("dungeonCount:_{0}", dungeon.dungeonCount);
+            writer.WriteLine("itemCount:_{0}", inventory.ItemList.Count);
+            foreach (Item item in inventory.ItemList)
+            {
+                writer.WriteLine("id:_{0}", item.id);
+                writer.WriteLine("name:_{0}", item.name);
+                writer.WriteLine("price:_{0}", item.price);
+                writer.WriteLine("attackPower:_{0}", item.attackPower);
+                writer.WriteLine("defensePower:_{0}", item.defensePower);
+                writer.WriteLine("type:_{0}", (int)item.type);
+                writer.WriteLine("isEquip:_{0}", item.isEquip);
+                writer.WriteLine("isOwn:_{0}", item.isOwn);
+                writer.WriteLine("description:_{0}", item.description);
+            }
         }
     }
-
-    public void LoadCharacter(Character character)
+    public void Load()//파일 불러오기
     {
         int id;
         string name;
@@ -803,11 +836,12 @@ public class FileSaveLoad
         int defensePower;
         bool isEquip;
         bool isOwn;
-
-        if (File.Exists(filePathC))
+        string description;
+        if (File.Exists(filePath))
         {
-            string[] lines = File.ReadAllLines(filePathC);
-            foreach (string line in lines) {
+            string[] lines = File.ReadAllLines(filePath);
+            foreach (string line in lines)
+            {
                 string[] words = line.Split('_');
                 if (words[0] == "level:")
                 {
@@ -829,14 +863,6 @@ public class FileSaveLoad
                 {
                     character.baseDefensePower = int.Parse(words[1]);
                 }
-                else if (words[0] == "attackPower:")
-                {
-                    character.attackPower = float.Parse(words[1]);
-                }
-                else if (words[0] == "defensePower:")
-                {
-                    character.defensePower = int.Parse(words[1]);
-                }
                 else if (words[0] == "maxHp:")
                 {
                     character.maxHp = int.Parse(words[1]);
@@ -849,63 +875,24 @@ public class FileSaveLoad
                 {
                     character.gold = int.Parse(words[1]);
                 }
-            }
-        }
-    }
-
-    public void SaveInventory(Inventory inventory)
-    {
-        using (StreamWriter writer = new StreamWriter(filePathI))
-        {
-            writer.WriteLine("itemCount:_{0}", inventory.ItemList.Count);
-            foreach (Item item in inventory.ItemList)
-            {
-                writer.WriteLine("id:_{0}", item.id);
-                writer.WriteLine("name:_{0}", item.name);
-                writer.WriteLine("price:_{0}", item.price);
-                writer.WriteLine("attackPower:_{0}", item.attackPower);
-                writer.WriteLine("defensePower:_{0}", item.defensePower);
-                writer.WriteLine("type:_{0}", (int)item.type);
-                writer.WriteLine("isEquip:_{0}", item.isEquip);
-                writer.WriteLine("isOwn:_{0}", item.isOwn);
-                writer.WriteLine("description:_{0}", item.description);
-            }
-        }
-    }
-
-    public void LoadInventory(Inventory inventory)
-    {
-
-        int id;
-        string name;
-        ItemType type;
-        int price;
-        int attackPower;
-        int defensePower;
-        bool isEquip;
-        bool isOwn;
-        string description;
-
-        if (File.Exists(filePathI))
-        {
-            string[] lines = File.ReadAllLines(filePathI);
-            foreach (string line in lines)
-            {
-                string[] words = line.Split('_');
-                if (words[0] == "itemCount:")
+                else if (words[0] == "dungeonCount:")
+                {
+                    dungeon.dungeonCount = int.Parse(words[1]);
+                }
+                else if (words[0] == "itemCount:")
                 {
                     int count = int.Parse(words[1]);
                     for (int i = 0; i < count; i++)
                     {
-                        id = int.Parse(lines[9 * i + 1].Split('_')[1]);
-                        name = lines[9 * i + 2].Split('_')[1];
-                        price = int.Parse(lines[9 * i + 3].Split('_')[1]);
-                        attackPower = int.Parse(lines[9 * i + 4].Split('_')[1]);
-                        defensePower = int.Parse(lines[9 * i + 5].Split('_')[1]);
-                        type = (ItemType)Enum.Parse(typeof(ItemType), lines[9 * i + 6].Split('_')[1]);
-                        isEquip = bool.Parse(lines[9 * i + 7].Split('_')[1]);
-                        isOwn = bool.Parse(lines[9 * i + 8].Split('_')[1]);
-                        description = lines[9 * i + 9].Split('_')[1];
+                        id = int.Parse(lines[9 * i + 10].Split('_')[1]);
+                        name = lines[9 * i + 11].Split('_')[1];
+                        price = int.Parse(lines[9 * i + 12].Split('_')[1]);
+                        attackPower = int.Parse(lines[9 * i + 13].Split('_')[1]);
+                        defensePower = int.Parse(lines[9 * i + 14].Split('_')[1]);
+                        type = (ItemType)Enum.Parse(typeof(ItemType), lines[9 * i + 15].Split('_')[1]);
+                        isEquip = bool.Parse(lines[9 * i + 16].Split('_')[1]);
+                        isOwn = bool.Parse(lines[9 * i + 17].Split('_')[1]);
+                        description = lines[9 * i + 18].Split('_')[1];
                         Item item = new Item(id, name, price, attackPower, defensePower, type, description);
                         item.isEquip = isEquip;
                         item.isOwn = isOwn;
@@ -916,7 +903,6 @@ public class FileSaveLoad
         }
     }
 
-
 }
 
     class Program
@@ -926,16 +912,15 @@ public class FileSaveLoad
         Character character = new Character();
         Village village = new Village(character);
         Inventory inventory = new Inventory(character);
-        FileSaveLoad fileSaveLoad = new FileSaveLoad();
+        Dungeon dungeon = new Dungeon(character, inventory);
+        FileSaveLoad fileSaveLoad = new FileSaveLoad(character, inventory, dungeon);
         int select = 0;
         bool isPlaying = true; //게임이 진행 중인지 확인
-        if (File.Exists("SaveCharacter.txt") && File.Exists("SaveInventory.txt"))
+        if (File.Exists("Save.txt"))
         {
-            fileSaveLoad.LoadCharacter(character);
-            fileSaveLoad.LoadInventory(inventory);
+            fileSaveLoad.Load();
         }
         Shop shop = new Shop(inventory);
-        Dungeon dungeon = new Dungeon(character, inventory);
 
         while (isPlaying)
         {
@@ -957,16 +942,14 @@ public class FileSaveLoad
                 case 5:
                     village.Rest();//휴식 메뉴를 보여줌
                     break;
-                case 6:
                 case 0:
-                    isPlaying = false;
+                    isPlaying = false;//0을 입력하면 게임 종료
                     break;
                 default:
                     Console.WriteLine("잘못된 입력입니다.");
                     break;
             }
-            fileSaveLoad.SaveCharacter(character);
-            fileSaveLoad.SaveInventory(inventory);
+            fileSaveLoad.Save();
         }
     }
 }
