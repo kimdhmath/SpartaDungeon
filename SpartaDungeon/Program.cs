@@ -101,7 +101,6 @@ public class Inventory //인벤토리 클래스
     private int select;//선택한 번호
     private int index = 0;//아이템 번호
     private bool isEquipManage = false;//장착 관리 모드 확인
-    DisPlayManager disPlayManager = new DisPlayManager();
 
     public Inventory(Character character)
     {
@@ -116,7 +115,7 @@ public class Inventory //인벤토리 클래스
         {
             Console.WriteLine("인벤토리");
             Console.WriteLine();
-            disPlayManager.ShowItmeList(items, true, false, isEquipManage);
+            ShowItmeList(items, true, false, isEquipManage);
             if (int.TryParse(Console.ReadLine(), out select))
             {
                 if (isEquipManage)//장착 관리 모드일 때
@@ -218,6 +217,68 @@ public class Inventory //인벤토리 클래스
     {
         get { return items; }
     }
+
+    public void ShowItmeList(List<Item> items, bool isInventory, bool isShop, bool isList)
+    {
+        int index = 0;
+        Console.WriteLine("[아이템 목록]");
+        foreach (Item item in items)
+        {
+            if (isList)//아이템 목록 표시
+            {
+                Console.Write("-" + ++index + " ");//아이템 번호 표시
+            }
+
+            if (item.isEquip == true && isInventory)//장착 중인 아이템 표시
+            {
+                Console.Write($"[E]{item.name,-12}|");
+            }
+            else//장착 중이 아닌 아이템 표시
+            {
+                Console.Write($"{item.name,-15}|");
+            }
+
+            if (item.type == ItemType.Weapon)//아이템 타입에 따라 아이템 설명 표시
+            {
+                Console.Write($"공격력 +{item.attackPower,-4}|{item.description}");
+            }
+            else if (item.type == ItemType.Armor)
+            {
+                Console.Write($"방어력 +{item.defensePower,-4}|{item.description}");
+            }
+
+            if (isShop)//상점 구매 목록일 때
+            {
+                if (item.isOwn == true)//이미 소유한 아이템 표시
+                {
+                    Console.WriteLine($"| 구매완료");
+                }
+                else//아직 소유하지 않은 아이템 표시
+                {
+                    Console.WriteLine($"| {item.price} G");
+                }
+            }
+            else
+            {
+                Console.WriteLine();
+            }
+        }
+        Console.WriteLine();
+        if (isInventory && !isList)//장착 관리 모드일 때
+        {
+            Console.WriteLine("1.장착 관리");
+        }
+        else if (isShop && !isList)//상점일 때
+        {
+            Console.WriteLine("1.아이템 구매");
+            Console.WriteLine("2.아이템 판매");
+        }
+        Console.WriteLine("0.나가기");
+        Console.WriteLine();
+        Console.WriteLine("원하시는 행동을 입력해 주세요");
+        Console.Write(">>");
+
+    }
 }
 
 
@@ -227,7 +288,6 @@ public class Shop
     private int select;
     private bool isBuyList = false;
     private bool isSaleList = false;
-    DisPlayManager disPlayManager = new DisPlayManager();
     private Inventory inventory;
 
     public Shop(Inventory inventory)
@@ -256,19 +316,19 @@ public class Shop
             {
                 Console.WriteLine("[구매 목록]");
                 Console.WriteLine();
-                disPlayManager.ShowItmeList(items, false, true, true);
+                inventory.ShowItmeList(items, false, true, true);
             }
             else if(isSaleList)//상점 판매 목록
             {
                 Console.WriteLine("[판매 목록]");
                 Console.WriteLine();
-                disPlayManager.ShowItmeList(inventory.ItemList, false, true, true);
+                inventory.ShowItmeList(inventory.ItemList, false, true, true);
             }
             else//상점 목록
             {
                 Console.WriteLine("[상점 목록]");
                 Console.WriteLine();
-                disPlayManager.ShowItmeList(items, false, true, false);
+                inventory.ShowItmeList(items, false, true, false);
             }
             if (int.TryParse(Console.ReadLine(), out select))
             {
@@ -393,72 +453,6 @@ public class Item //아이템 클래스
     this.isEquip = false;
     this.description = description;
     this.isOwn = false;
-    }
-}
-
-public class DisPlayManager
-{
-
-    public void ShowItmeList(List<Item> items, bool isInventory, bool isShop, bool isList)
-    {
-        int index = 0;
-        Console.WriteLine("[아이템 목록]");
-        foreach (Item item in items)
-        {
-            if (isList)//아이템 목록 표시
-            {
-                Console.Write("-" + ++index + " ");//아이템 번호 표시
-            }
-
-            if (item.isEquip == true && isInventory)//장착 중인 아이템 표시
-            {
-                Console.Write($"[E]{item.name,-12}|");
-            }
-            else//장착 중이 아닌 아이템 표시
-            {
-                Console.Write($"{item.name,-15}|");
-            }
-
-            if (item.type == ItemType.Weapon)//아이템 타입에 따라 아이템 설명 표시
-            {
-                Console.Write($"공격력 +{item.attackPower,-4}|{item.description}");
-            }
-            else if (item.type == ItemType.Armor)
-            {
-                Console.Write($"방어력 +{item.defensePower,-4}|{item.description}");
-            }
-
-            if (isShop)//상점 구매 목록일 때
-            {
-                if(item.isOwn == true)//이미 소유한 아이템 표시
-                {
-                    Console.WriteLine($"| 구매완료");
-                }
-                else//아직 소유하지 않은 아이템 표시
-                {
-                    Console.WriteLine($"| {item.price} G");
-                }
-            }
-            else
-            {
-                Console.WriteLine();
-            }
-        }
-        Console.WriteLine();
-        if (isInventory && !isList)//장착 관리 모드일 때
-        {
-            Console.WriteLine("1.장착 관리");
-        }
-        else if (isShop && !isList)//상점일 때
-        {
-            Console.WriteLine("1.아이템 구매");
-            Console.WriteLine("2.아이템 판매");
-        }
-        Console.WriteLine("0.나가기");
-        Console.WriteLine();
-        Console.WriteLine("원하시는 행동을 입력해 주세요");
-        Console.Write(">>");
-        
     }
 }
 
