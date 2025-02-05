@@ -699,7 +699,7 @@ public class Dungeon //던전 클래스
         Console.WriteLine("던전 클리어!");
         Console.WriteLine("축하합니다!!");
         dungeonCount++;
-        if (dungeonCount == character.level)//던전 클리어 횟수가 레벨과 같을 때 레벨업
+        if (dungeonCount >= character.level)//던전 클리어 횟수가 레벨과 같을 때 레벨업
         {
             dungeonCount = 0;
             character.LevelUp();
