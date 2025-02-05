@@ -39,7 +39,7 @@ public class Character //캐릭터 클래스
             defensePower = baseDefensePower;
             maxHp = 100;
             hp = maxHp;
-            gold = 111500;
+            gold = 1500;
         }
     }
 
@@ -659,27 +659,25 @@ public class Dungeon //던전 클래스
             Console.Write(">>");
             if (int.TryParse(Console.ReadLine(), out difficultLevel))//숫자를 입력받으면
             {
-                if (difficultLevel == 0)
+                switch (difficultLevel)
                 {
-                    Console.Clear();
-                    break;
-                }
-                else if (difficultLevel == 1)
-                {
-                    StartDungeon(5);
-                }
-                else if (difficultLevel == 2)
-                {
-                    StartDungeon(11);
-                }
-                else if (difficultLevel == 3)
-                {
-                    StartDungeon(17);
-                }
-                else
-                {
-                    Console.Clear();
-                    Console.WriteLine("잘못된 입력입니다.");
+                    case 0:
+                        Console.Clear();
+                        return;
+                        break;
+                    case 1:
+                        StartDungeon(5);
+                        break;
+                    case 2:
+                        StartDungeon(11);
+                        break;
+                    case 3:
+                        StartDungeon(17);
+                        break;
+                    default:
+                        Console.Clear();
+                        Console.WriteLine("잘못된 입력입니다.");
+                        break;
                 }
             }
             else
@@ -706,24 +704,23 @@ public class Dungeon //던전 클래스
             dungeonCount = 0;
             character.LevelUp();
         }
-        if (difficult == 1)
+        switch (difficult)
         {
-            Console.WriteLine("쉬운 던전을 클리어 하셨습니다.");
-            rewardGold = Reward(1000);
-        }
-        else if (difficult == 2)
-        {
-            Console.WriteLine("일반 던전을 클리어 하셨습니다.");
-            rewardGold = Reward(1700);
-        }
-        else if (difficult == 3)
-        {
-            Console.WriteLine("어려운 던전을 클리어 하셨습니다.");
-            rewardGold = Reward(2500);
-        }
-        else
-        {
-            rewardGold = 0;
+            case 1:
+                Console.WriteLine("쉬운 던전을 클리어 하셨습니다.");
+                rewardGold = Reward(1000);
+                break;
+            case 2:
+                Console.WriteLine("일반 던전을 클리어 하셨습니다.");
+                rewardGold = Reward(1700);
+                break;
+            case 3:
+                Console.WriteLine("어려운 던전을 클리어 하셨습니다.");
+                rewardGold = Reward(2500);
+                break;
+            default:
+                rewardGold = 0;
+                break;
         }
         character.gold += rewardGold;
 
@@ -843,66 +840,59 @@ public class FileSaveLoad//파일 저장 및 불러오기
             foreach (string line in lines)
             {
                 string[] words = line.Split('_');
-                if (words[0] == "level:")
+                switch (words[0])
                 {
-                    character.level = int.Parse(words[1]);
-                }
-                else if (words[0] == "name:")
-                {
-                    character.name = words[1];
-                }
-                else if (words[0] == "cClass:")
-                {
-                    character.cClass = words[1];
-                }
-                else if (words[0] == "baseAttackPower:")
-                {
-                    character.baseAttackPower = float.Parse(words[1]);
-                }
-                else if (words[0] == "baseDefensePower:")
-                {
-                    character.baseDefensePower = int.Parse(words[1]);
-                }
-                else if (words[0] == "maxHp:")
-                {
-                    character.maxHp = int.Parse(words[1]);
-                }
-                else if (words[0] == "hp:")
-                {
-                    character.hp = int.Parse(words[1]);
-                }
-                else if (words[0] == "gold:")
-                {
-                    character.gold = int.Parse(words[1]);
-                }
-                else if (words[0] == "dungeonCount:")
-                {
-                    dungeon.dungeonCount = int.Parse(words[1]);
-                }
-                else if (words[0] == "itemCount:")
-                {
-                    int count = int.Parse(words[1]);
-                    for (int i = 0; i < count; i++)
-                    {
-                        id = int.Parse(lines[9 * i + 10].Split('_')[1]);
-                        name = lines[9 * i + 11].Split('_')[1];
-                        price = int.Parse(lines[9 * i + 12].Split('_')[1]);
-                        attackPower = int.Parse(lines[9 * i + 13].Split('_')[1]);
-                        defensePower = int.Parse(lines[9 * i + 14].Split('_')[1]);
-                        type = (ItemType)Enum.Parse(typeof(ItemType), lines[9 * i + 15].Split('_')[1]);
-                        isEquip = bool.Parse(lines[9 * i + 16].Split('_')[1]);
-                        isOwn = bool.Parse(lines[9 * i + 17].Split('_')[1]);
-                        description = lines[9 * i + 18].Split('_')[1];
-                        Item item = new Item(id, name, price, attackPower, defensePower, type, description);
-                        item.isEquip = isEquip;
-                        item.isOwn = isOwn;
-                        inventory.AddItem(item);
-                    }
+                    case "level:":
+                        character.level = int.Parse(words[1]);
+                        break;
+                    case "name:":
+                        character.name = words[1];
+                        break;
+                    case "cClass:":
+                        character.cClass = words[1];
+                        break;
+                    case "baseAttackPower:":
+                        character.baseAttackPower = float.Parse(words[1]);
+                        break;
+                    case "baseDefensePower:":
+                        character.baseDefensePower = int.Parse(words[1]);
+                        break;
+                    case "maxHp:":
+                        character.maxHp = int.Parse(words[1]);
+                        break;
+                    case "hp:":
+                        character.hp = int.Parse(words[1]);
+                        break;
+                    case "gold:":
+                        character.gold = int.Parse(words[1]);
+                        break;
+                    case "dungeonCount:":
+                        dungeon.dungeonCount = int.Parse(words[1]);
+                        break;
+                    case "itemCount:":
+                        int count = int.Parse(words[1]);
+                        for (int i = 0; i < count; i++)
+                        {
+                            id = int.Parse(lines[9 * i + 10].Split('_')[1]);
+                            name = lines[9 * i + 11].Split('_')[1];
+                            price = int.Parse(lines[9 * i + 12].Split('_')[1]);
+                            attackPower = int.Parse(lines[9 * i + 13].Split('_')[1]);
+                            defensePower = int.Parse(lines[9 * i + 14].Split('_')[1]);
+                            type = (ItemType)Enum.Parse(typeof(ItemType), lines[9 * i + 15].Split('_')[1]);
+                            isEquip = bool.Parse(lines[9 * i + 16].Split('_')[1]);
+                            isOwn = bool.Parse(lines[9 * i + 17].Split('_')[1]);
+                            description = lines[9 * i + 18].Split('_')[1];
+                            Item item = new Item(id, name, price, attackPower, defensePower, type, description);
+                            item.isEquip = isEquip;
+                            item.isOwn = isOwn;
+                            inventory.AddItem(item);
+                        }
+                        break;
+                    
                 }
             }
         }
     }
-
 }
 
     class Program
