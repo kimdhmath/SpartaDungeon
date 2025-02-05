@@ -361,15 +361,13 @@ public class Shop
         AddItem(new Item(4,"낡은 검", 600, 2, 0, ItemType.Weapon, "쉽게 볼 수 있는 낡은 검 입니다."));
         AddItem(new Item(5,"청동 도끼", 1700, 5, 0, ItemType.Weapon, "어디선가 사용됐던거 같은 도끼입니다."));
         AddItem(new Item(6,"스파르타의 창", 2700, 7, 0, ItemType.Weapon, "스파르타의 전사들이 사용했다는 전설의 창입니다."));
-        var sortList = items.OrderBy(x => x.id);
-        items = sortList.ToList();
     }
 
 
     public void ShopMenu()//상점 메뉴
     {
 
-        var sortList = items.OrderBy(x => x.id);
+        var sortList = items.OrderBy(x => x.id);//아이템 번호 순으로 정렬
         items = sortList.ToList();
         Console.Clear();
         while (true)
@@ -477,7 +475,7 @@ public class Shop
                         isBuyList = true;
                         Console.Clear();
                     }
-                    else if(select == 2)
+                    else if(select == 2)//2를 입력하면 상점 판매 목록으로 전환
                     {
                         isSaleList = true;
                         Console.Clear();
@@ -659,7 +657,7 @@ public class Dungeon //던전 클래스
             Console.Write(">>");
             if (int.TryParse(Console.ReadLine(), out difficultLevel))//숫자를 입력받으면
             {
-                switch (difficultLevel)
+                switch (difficultLevel)//입력받은 숫자에 따라 던전 난이도 설정
                 {
                     case 0:
                         Console.Clear();
@@ -704,7 +702,7 @@ public class Dungeon //던전 클래스
             dungeonCount = 0;
             character.LevelUp();
         }
-        switch (difficult)
+        switch (difficult)//던전 난이도에 따라 보상 설정
         {
             case 1:
                 Console.WriteLine("쉬운 던전을 클리어 하셨습니다.");
@@ -734,12 +732,12 @@ public class Dungeon //던전 클래스
     private void PlayDungeon(int recommendateion)//던전 플레이
     {
         random.Next(20, 36);
-        character.hp = character.hp - random.Next(20, 36) - recommendateion + character.defensePower;
-        if(character.hp > 0)
+        character.hp = character.hp - random.Next(20, 36) - recommendateion + character.defensePower;//방어력에 따라 체력 감소
+        if (character.hp > 0)//체력이 0 초과일 때
         {
             ClearDungeon(difficultLevel);
         }
-        else
+        else//체력이 0 이하일 때
         {
             inventory.RemoveAllItem();
             isLive = false;
@@ -756,16 +754,16 @@ public class Dungeon //던전 클래스
     private int Reward(int basicReward)//보상
     {
         int attack = (int)character.attackPower;
-        return (basicReward * (100 + random.Next(attack, attack * 2 + 1))/100);
+        return (basicReward * (100 + random.Next(attack, attack * 2 + 1))/100);//공격력에 따른 보상 골드 계산
     }
 
-    private void StartDungeon(int recommendation)
+    private void StartDungeon(int recommendation)//던전 시작
     {
         beforeHp = character.hp;
         beforeGold = character.gold;
-        if (character.defensePower < recommendation)
+        if (character.defensePower < recommendation)//방어력이 권장 방어력보다 낮을 때
         {
-            if (random.Next(1, 101) <= 40)
+            if (random.Next(1, 101) <= 40)//40% 확률로 던전 실패
             {
                 FailDungeon();
             }
@@ -784,7 +782,7 @@ public class Dungeon //던전 클래스
 
 public class FileSaveLoad//파일 저장 및 불러오기
 {
-    string filePath = "Save.txt";
+    string filePath = "Save.txt";//파일 경로
     Character character;
     Inventory inventory;
     Dungeon dungeon;
@@ -797,29 +795,29 @@ public class FileSaveLoad//파일 저장 및 불러오기
     }
     public void Save()//파일 저장
     {
-        using (StreamWriter writer = new StreamWriter(filePath))
+        using (StreamWriter writer = new StreamWriter(filePath))//파일에 쓰기
         {
-            writer.WriteLine("level:_{0}", character.level);
-            writer.WriteLine("name:_{0}", character.name);
-            writer.WriteLine("cClass:_{0}", character.cClass);
-            writer.WriteLine("baseAttackPower:_{0}", character.baseAttackPower);
-            writer.WriteLine("baseDefensePower:_{0}", character.baseDefensePower);
-            writer.WriteLine("maxHp:_{0}", character.maxHp);
-            writer.WriteLine("hp:_{0}", character.hp);
-            writer.WriteLine("gold:_{0}", character.gold);
-            writer.WriteLine("dungeonCount:_{0}", dungeon.dungeonCount);
-            writer.WriteLine("itemCount:_{0}", inventory.ItemList.Count);
-            foreach (Item item in inventory.ItemList)
+            writer.WriteLine("level:_{0}", character.level);//레벨 저장
+            writer.WriteLine("name:_{0}", character.name);//이름 저장
+            writer.WriteLine("cClass:_{0}", character.cClass);//직업 저장
+            writer.WriteLine("baseAttackPower:_{0}", character.baseAttackPower);//기본 공격력 저장
+            writer.WriteLine("baseDefensePower:_{0}", character.baseDefensePower);//기본 방어력 저장
+            writer.WriteLine("maxHp:_{0}", character.maxHp);//최대 체력 저장
+            writer.WriteLine("hp:_{0}", character.hp);//체력 저장
+            writer.WriteLine("gold:_{0}", character.gold);//골드 저장
+            writer.WriteLine("dungeonCount:_{0}", dungeon.dungeonCount);//던전 클리어 횟수 저장
+            writer.WriteLine("itemCount:_{0}", inventory.ItemList.Count);//인벤토리 아이템 개수 저장
+            foreach (Item item in inventory.ItemList)//인벤토리 아이템 저장
             {
-                writer.WriteLine("id:_{0}", item.id);
-                writer.WriteLine("name:_{0}", item.name);
-                writer.WriteLine("price:_{0}", item.price);
-                writer.WriteLine("attackPower:_{0}", item.attackPower);
-                writer.WriteLine("defensePower:_{0}", item.defensePower);
-                writer.WriteLine("type:_{0}", (int)item.type);
-                writer.WriteLine("isEquip:_{0}", item.isEquip);
-                writer.WriteLine("isOwn:_{0}", item.isOwn);
-                writer.WriteLine("description:_{0}", item.description);
+                writer.WriteLine("id:_{0}", item.id);//아이템 번호 저장
+                writer.WriteLine("name:_{0}", item.name);//아이템 이름 저장
+                writer.WriteLine("price:_{0}", item.price);//아이템 가격 저장
+                writer.WriteLine("attackPower:_{0}", item.attackPower);//아이템 공격력 저장
+                writer.WriteLine("defensePower:_{0}", item.defensePower);//아이템 방어력 저장
+                writer.WriteLine("type:_{0}", (int)item.type);//아이템 타입 저장
+                writer.WriteLine("isEquip:_{0}", item.isEquip);//아이템 장착 여부 저장
+                writer.WriteLine("isOwn:_{0}", item.isOwn);//아이템 소유 여부 저장
+                writer.WriteLine("description:_{0}", item.description);//아이템 설명 저장
             }
         }
     }
@@ -834,13 +832,14 @@ public class FileSaveLoad//파일 저장 및 불러오기
         bool isEquip;
         bool isOwn;
         string description;
-        if (File.Exists(filePath))
+
+        if (File.Exists(filePath))//파일이 존재할 때
         {
-            string[] lines = File.ReadAllLines(filePath);
+            string[] lines = File.ReadAllLines(filePath);//파일의 모든 줄을 읽어옴
             foreach (string line in lines)
             {
-                string[] words = line.Split('_');
-                switch (words[0])
+                string[] words = line.Split('_');//_를 기준으로 문자열을 나눔
+                switch (words[0])//첫 번째 문자열에 따라 저장
                 {
                     case "level:":
                         character.level = int.Parse(words[1]);
@@ -871,7 +870,7 @@ public class FileSaveLoad//파일 저장 및 불러오기
                         break;
                     case "itemCount:":
                         int count = int.Parse(words[1]);
-                        for (int i = 0; i < count; i++)
+                        for (int i = 0; i < count; i++)//인벤토리 아이템 개수만큼 반복
                         {
                             id = int.Parse(lines[9 * i + 10].Split('_')[1]);
                             name = lines[9 * i + 11].Split('_')[1];
@@ -882,10 +881,10 @@ public class FileSaveLoad//파일 저장 및 불러오기
                             isEquip = bool.Parse(lines[9 * i + 16].Split('_')[1]);
                             isOwn = bool.Parse(lines[9 * i + 17].Split('_')[1]);
                             description = lines[9 * i + 18].Split('_')[1];
-                            Item item = new Item(id, name, price, attackPower, defensePower, type, description);
-                            item.isEquip = isEquip;
-                            item.isOwn = isOwn;
-                            inventory.AddItem(item);
+                            Item item = new Item(id, name, price, attackPower, defensePower, type, description);//저장된 아이템 생성
+                            item.isEquip = isEquip;//아이템 장착 여부 설정
+                            item.isOwn = isOwn;//아이템 소유 여부 설정
+                            inventory.AddItem(item);//인벤토리에 아이템 추가
                         }
                         break;
                     
@@ -906,13 +905,13 @@ public class FileSaveLoad//파일 저장 및 불러오기
         FileSaveLoad fileSaveLoad = new FileSaveLoad(character, inventory, dungeon);
         int select = 0;
         bool isPlaying = true; //게임이 진행 중인지 확인
-        if (File.Exists("Save.txt"))
+        if (File.Exists("Save.txt"))//저장된 파일이 있을 때
         {
-            fileSaveLoad.Load();
+            fileSaveLoad.Load();//파일 불러오기
         }
         Shop shop = new Shop(inventory);
 
-        while (isPlaying)
+        while (isPlaying)//게임이 진행 중일 때
         {
             select = village.SelectMenu();//마을에서 할 수 있는 행동을 선택
             switch (select)
@@ -939,7 +938,7 @@ public class FileSaveLoad//파일 저장 및 불러오기
                     Console.WriteLine("잘못된 입력입니다.");
                     break;
             }
-            fileSaveLoad.Save();
+            fileSaveLoad.Save();//마을로 돌아오면 파일 저장
         }
     }
 }
